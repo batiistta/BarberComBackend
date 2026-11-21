@@ -25,6 +25,8 @@ export function createApp(db, secret, { allowAnyPassword = false, demoGestor = f
   app.set('trust proxy', 1);
   const secureCookie = process.env.COOKIE_SECURE === 'true'
     || (process.env.COOKIE_SECURE !== 'false' && process.env.NODE_ENV === 'production');
+  const sameSiteCookie = process.env.COOKIE_SAMESITE
+    || (secureCookie ? 'none' : 'lax');
   app.use((req, res, next) => {
     res.set({
       'Content-Security-Policy': `default-src 'none'; frame-ancestors 'none'; base-uri 'none'`,
@@ -48,7 +50,7 @@ export function createApp(db, secret, { allowAnyPassword = false, demoGestor = f
   app.use(session({
     store: new PostgresSessionStore(db),
     secret, name: 'barbercom.sid', resave: false, saveUninitialized: false,
-    cookie: { httpOnly: true, sameSite: 'lax', secure: secureCookie, maxAge: 2 * 60 * 60 * 1000 }
+    cookie: { httpOnly: true, sameSite: sameSiteCookie, secure: secureCookie, maxAge: 2 * 60 * 60 * 1000 }
   }));
   app.use(apiAdapter);
   app.use((req, res, next) => {
