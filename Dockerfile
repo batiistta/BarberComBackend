@@ -13,7 +13,6 @@ COPY src ./src
 COPY database ./database
 COPY scripts/docker-entrypoint.js scripts/preparar-aplicacao.js ./scripts/
 
-ENV NODE_ENV=development
 ENV LISTEN_HOST=0.0.0.0
 ENV PORT=3000
 

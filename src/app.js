@@ -15,7 +15,6 @@ import { createHistoryRouter } from './historico.js';
 
 export function createApp(db, secret, { allowAnyPassword = false, demoGestor = false, google = null, frontendOrigin = null } = {}) {
   if (!secret || secret.length < 32) throw new Error('SESSION_SECRET precisa de pelo menos 32 caracteres.');
-  if (process.env.NODE_ENV === 'production') throw new Error('Esta versao e local. Configure HTTPS e sessoes persistentes antes de publicar.');
   const app = express();
   if (frontendOrigin && new URL(frontendOrigin).origin !== frontendOrigin) throw new Error('FRONTEND_ORIGIN deve conter apenas origem, sem caminho ou barra final.');
   app.locals.allowAnyPassword = allowAnyPassword;
@@ -23,6 +22,9 @@ export function createApp(db, secret, { allowAnyPassword = false, demoGestor = f
   app.locals.googleEnabled = Boolean(google);
   app.locals.frontendOrigin = frontendOrigin;
   app.disable('x-powered-by');
+  app.set('trust proxy', 1);
+  const secureCookie = process.env.COOKIE_SECURE === 'true'
+    || (process.env.COOKIE_SECURE !== 'false' && process.env.NODE_ENV === 'production');
   app.use((req, res, next) => {
     res.set({
       'Content-Security-Policy': `default-src 'none'; frame-ancestors 'none'; base-uri 'none'`,
@@ -46,7 +48,7 @@ export function createApp(db, secret, { allowAnyPassword = false, demoGestor = f
   app.use(session({
     store: new PostgresSessionStore(db),
     secret, name: 'barbercom.sid', resave: false, saveUninitialized: false,
-    cookie: { httpOnly: true, sameSite: 'lax', maxAge: 2 * 60 * 60 * 1000 }
+    cookie: { httpOnly: true, sameSite: 'lax', secure: secureCookie, maxAge: 2 * 60 * 60 * 1000 }
   }));
   app.use(apiAdapter);
   app.use((req, res, next) => {
