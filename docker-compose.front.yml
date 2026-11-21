@@ -1,0 +1,9 @@
+# Uso: clone BarberComFront como pasta irmã e rode:
+# docker compose -f docker-compose.yml -f docker-compose.front.yml up --build
+services:
+  web:
+    build: ../BarberComFront
+    depends_on:
+      - api
+    ports:
+      - '5173:80'

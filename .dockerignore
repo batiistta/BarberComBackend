@@ -1,0 +1,16 @@
+node_modules
+work
+.env
+.git
+public
+views
+outputs
+docs
+test
+*.md
+scripts/configurar-local.js
+scripts/iniciar-local.ps1
+scripts/parar-banco-local.ps1
+scripts/testar-banco.ps1
+scripts/empacotar.ps1
+scripts/preparar-aplicacao.js.bak

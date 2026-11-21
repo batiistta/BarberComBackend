@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-barbercom}
+      POSTGRES_USER: ${POSTGRES_USER:-barbercom}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-barbercom_local_dev}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 3s
+      timeout: 5s
+      retries: 20
+    ports:
+      - '5432:5432'
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-barbercom}:${POSTGRES_PASSWORD:-barbercom_local_dev}@db:5432/${POSTGRES_DB:-barbercom}
+      SESSION_SECRET: ${SESSION_SECRET:-troque-este-segredo-local-com-pelo-menos-32-caracteres}
+      PORT: 3000
+      LISTEN_HOST: 0.0.0.0
+      ADMIN_PHONE: ${ADMIN_PHONE:-71999990000}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-SenhaGestor@2026}
+      ALLOW_ANY_PASSWORD: ${ALLOW_ANY_PASSWORD:-false}
+      DEMO_GESTOR: ${DEMO_GESTOR:-true}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-}
+    ports:
+      - '3000:3000'
+
+volumes:
+  pgdata:
